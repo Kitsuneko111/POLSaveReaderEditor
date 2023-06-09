@@ -21,21 +21,20 @@ class Reader:
         Read the given file and save the data
         :param file: File to open and store data from
         :param saveOverride: Override for where data is stored from
-        :return: Save file
+        :return: Save data
         """
         if saveOverride:
             saveObject = saveOverride
         else:
             saveObject = self.save
 
-        savefile = open(file, "r")
+        savefile = open(file, "rb")
         for location in self.__locations:
             savefile.seek(location[0])
-            data = savefile.read(location[1])
-            hexdata = ""
-            for datum in data:
-                hexdata += hexExtendor(ord(datum), 2)
-            saveObject.set(location[0], hexdata)
+            data = ""
+            for i in range(location[1]):
+                data += savefile.read(1).hex()
+            saveObject.set(location[0], data)
         savefile.close()
         return saveObject
 
@@ -144,6 +143,7 @@ if __name__ == "__main__":
         testSave = reader.readFile("test.sav")
         assert testSave.deathcounter == 1, \
             "read file death fail. Got "+str(testSave.deathcounter)+" instead"
+        print("all tests passed successfully")
         del reader
 
     reader = Reader()
