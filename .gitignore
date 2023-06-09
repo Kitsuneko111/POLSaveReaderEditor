@@ -2,3 +2,4 @@
 /util/hex decoder.txt
 /venv
 /.idea
+/util/__pycache__
