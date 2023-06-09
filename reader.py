@@ -139,11 +139,12 @@ class Reader:
 
 
 if __name__ == "__main__":
-    reader = Reader()
-    testSave = reader.readFile("test.sav")
-    assert testSave.deathcounter == 1, \
-        "read file death fail. Got "+str(testSave.deathcounter)+" instead"
+    if os.path.exists("test.sav"):
+        reader = Reader()
+        testSave = reader.readFile("test.sav")
+        assert testSave.deathcounter == 1, \
+            "read file death fail. Got "+str(testSave.deathcounter)+" instead"
+        del reader
 
-    del reader
     reader = Reader()
     reader.run()
