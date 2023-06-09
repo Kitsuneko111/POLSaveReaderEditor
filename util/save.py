@@ -96,7 +96,7 @@ class Save:
 
         self.__locations = locations
 
-    def get(self, attr: Union[str, int]) -> Union[int, str, AttributeError, KeyError]:
+    def get(self, attr: Union[str, int]) -> Union[str, AttributeError, KeyError]:
         """
         Get values based on either address or value name
         :param attr: Attribute to get
@@ -106,14 +106,14 @@ class Save:
             for location in self.__locations:
                 if location[0] == attr:
                     return convertToHex(self.__getattribute__(location[2]))
-            return KeyError("No such save location currently known: " + str(attr))
+            raise KeyError("No such save location currently known: " + str(attr))
 
         else:
             if attr[:2] == "__":
-                return AttributeError("Trying to access protected value: " + str(attr))
+                raise AttributeError("Trying to access protected value: " + str(attr))
             attribute = self.__getattribute__(attr)
-            if not attribute:
-                return KeyError("No such save value currently known: " + str(attr))
+            if attribute is None:
+                raise KeyError("Save value does not currently have a value: " + str(attr))
             else:
                 return convertToHex(attribute)
 
@@ -130,23 +130,23 @@ class Save:
                     val = convertFromHex(val, location[3])
                     self.__setattr__(location[2], val)
                     return
-            return KeyError("No such save location currently known: " + str(key))
+            raise KeyError("No such save location currently known: " + str(key))
         else:
             if key[:2] == "__":
-                return AttributeError("Trying to access protected value: " + str(key))
+                raise AttributeError("Trying to access protected value: " + str(key))
             for location in self.__locations:
                 if location[2] == key:
                     val = convertFromHex(val, location[3])
                     self.__setattr__(key, val)
                     return
-            return KeyError("No such save value currently known: " + str(key))
+            raise KeyError("No such save value currently known: " + str(key))
 
 
 if __name__ == "__main__":
-    assert convertToHex(15) == "0f000000", \
+    assert convertToHex(15) == "0f00000000000000", \
         "int convert to hex failure. Got " + str(convertToHex(15)) + " instead"
-    assert convertFromHex("0f000000", int) == 15, \
-        "int convert from hex fail. Got " + str(convertFromHex("0f000000", int)) + " instead"
+    assert convertFromHex("0f00000000000000", int) == 15, \
+        "int convert from hex fail. Got " + str(convertFromHex("0f00000000000000", int)) + " instead"
 
     assert convertToHex("1.0.7.0") == "312e302e372e30", \
         "str convert to hex fail. Got " + str(convertToHex("1.0.7.0")) + " instead"
