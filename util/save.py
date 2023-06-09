@@ -1,16 +1,8 @@
 """Python class for storing save information as an object"""
 from typing import List, Union, Optional
 
+from util.hexextendor import hexExtendor
 from util.locations import locations
-
-
-def hexExtendor(val, length=8):
-    """
-
-    :param val:
-    :return:
-    """
-    return hex(val)[2:].zfill(length)
 
 
 def convertFromHex(val: str, valtype: type) -> Union[int, str, list, TypeError]:
@@ -27,7 +19,7 @@ def convertFromHex(val: str, valtype: type) -> Union[int, str, list, TypeError]:
         return int(hexval, 16)
     elif valtype == str:
         newval = ""
-        for i in range(len(val) - 2, -1, -2):
+        for i in range(0, len(val) - 1, 2):
             newval += chr(int(val[i] + val[i + 1], 16))
         return newval
     elif valtype == list:
@@ -59,12 +51,12 @@ def convertToHex(val: Union[int, str, list]) -> Union[str, TypeError]:
             for char in val:
                 hexval += hexExtendor(ord(char), 2)
             newhexval = ""
-            for i in range(len(hexval) - 2, -1, -2):
+            for i in range(0, len(hexval) - 1, 2):
                 newhexval += hexval[i] + hexval[i + 1]
             return newhexval
     elif type(val) == list:
         hexlist = [hexExtendor(listval, 4) for listval in val]
-        vallist = [hexlist[i][2:4]+hexlist[i][:2] for i in range(3)]
+        vallist = [hexlist[i][2:4] + hexlist[i][:2] for i in range(3)]
         return "".join(vallist)
 
     else:
@@ -77,11 +69,11 @@ class Save:
     """
 
     def __init__(self):
-        self.timestamp: Optional[int]  = None
-        self.version: Optional[str]  = None
-        self.elapsed: Optional[int]  = None
-        self.deathcounter: Optional[int]  = None
-        self.slot: Optional[int]  = None
+        self.timestamp: Optional[int] = None
+        self.version: Optional[str] = None
+        self.elapsed: Optional[int] = None
+        self.deathcounter: Optional[int] = None
+        self.slot: Optional[int] = None
         """
         1. Village Intro
         3. A New Friend
@@ -98,8 +90,8 @@ class Save:
         17. Home
         """
         self.__chapters = (1, 3, 4, 5, 6, 7, 9, 10, 12, 14, 15, 16, 17)
-        self.chapterId: Optional[int]  = None
-        self.sceneId: Optional[int]  = None
+        self.chapterId: Optional[int] = None
+        self.sceneId: Optional[int] = None
         self.position: Optional[List[int]] = None
 
         self.__locations = locations
@@ -152,26 +144,26 @@ class Save:
 
 if __name__ == "__main__":
     assert convertToHex(15) == "0f000000", \
-        "int convert to hex failure. Got "+str(convertToHex(15))+" instead"
+        "int convert to hex failure. Got " + str(convertToHex(15)) + " instead"
     assert convertFromHex("0f000000", int) == 15, \
-        "int convert from hex fail. Got "+str(convertFromHex("0f000000", int))+" instead"
+        "int convert from hex fail. Got " + str(convertFromHex("0f000000", int)) + " instead"
 
-    assert convertToHex("1.0.7.0") == "302e372e302e31", \
-        "str convert to hex fail. Got "+str(convertToHex("1.0.7.0"))+" instead"
-    assert convertFromHex("302e372e302e31", str) == "1.0.7.0", \
-        "str convert from hex fail. Got "+str(convertFromHex("302e372e302e31", str))+" instead"
+    assert convertToHex("1.0.7.0") == "312e302e372e30", \
+        "str convert to hex fail. Got " + str(convertToHex("1.0.7.0")) + " instead"
+    assert convertFromHex("312e302e372e30", str) == "1.0.7.0", \
+        "str convert from hex fail. Got " + str(convertFromHex("312e302e372e30", str)) + " instead"
 
     assert convertToHex([12, 13, 14]) == "0c000d000e00", \
-        "list convert to hex fail. Got "+str(convertToHex([12, 13, 14]))+" instead"
-    assert convertFromHex("0c000d000e00", list) == [12, 13, 14],\
-        "list convert from hex fail. Got "+str(convertFromHex("0c000d000e00", list))+" instead"
+        "list convert to hex fail. Got " + str(convertToHex([12, 13, 14])) + " instead"
+    assert convertFromHex("0c000d000e00", list) == [12, 13, 14], \
+        "list convert from hex fail. Got " + str(convertFromHex("0c000d000e00", list)) + " instead"
 
     saveFile = Save()
     saveFile.set("position", "0c000d000e00")
     assert saveFile.position == [12, 13, 14], \
-        "Save file set fail. Got "+str(saveFile.position)+" instead"
+        "Save file set fail. Got " + str(saveFile.position) + " instead"
     # Illegal access of private attribute to allow secure testing of hex value access
     assert saveFile.get(saveFile._Save__locations[-1][0]) == "0c000d000e00", \
-        "Save file get fail. Got "+str(saveFile.get("position"))+" instead"
+        "Save file get fail. Got " + str(saveFile.get("position")) + " instead"
 
     print("All tests passed successfully")
