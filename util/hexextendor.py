@@ -3,7 +3,7 @@ Util file including hex extending functions
 """
 
 
-def hexExtendor(val, length=8):
+def hexExtendor(val, length=16):
     """
     Zfills a hex value with required bytes
     :param val: Value to convert to hex
