@@ -4,7 +4,7 @@ from typing import List, Union
 from util.locations import locations
 
 
-def hexExtendor(val, length = 8):
+def hexExtendor(val, length=8):
     """
 
     :param val:
@@ -31,16 +31,12 @@ def convertFromHex(val: str, valtype: type) -> Union[int, str, list, TypeError]:
             newval += chr(int(val[i] + val[i + 1], 16))
         return newval
     elif valtype == list:
-        newval = []
-        for i in range(3):
-            hexval = ""
-            for j in range(i*4-1, (i-1)*4-1, -2):
-                hexval += val[j] + val[j + 1]
-            newval.append(hexval)
+        hexlist = [val[:4], val[4:8], val[8:12]]
+        newval = [hexlist[i][2:4] + hexlist[i][:2] for i in range(3)]
         newval = [int(val, 16) for val in newval]
         return newval
     else:
-        return TypeError("Invalid conversion target type: "+str(valtype))
+        return TypeError("Invalid conversion target type: " + str(valtype))
 
 
 def convertToHex(val: Union[int, str, list]) -> Union[str, TypeError]:
@@ -52,8 +48,8 @@ def convertToHex(val: Union[int, str, list]) -> Union[str, TypeError]:
     if type(val) == int:
         hexval = hexExtendor(val)
         newhexval = ""
-        for i in range(len(hexval)-2, -1, -2):
-            newhexval += hexval[i]+hexval[i+1]
+        for i in range(len(hexval) - 2, -1, -2):
+            newhexval += hexval[i] + hexval[i + 1]
         return newhexval
     elif type(val) == str:
         try:
@@ -68,16 +64,18 @@ def convertToHex(val: Union[int, str, list]) -> Union[str, TypeError]:
             return newhexval
     elif type(val) == list:
         hexlist = [hexExtendor(listval, 4) for listval in val]
-
+        vallist = [hexlist[i][2:4]+hexlist[i][:2] for i in range(3)]
+        return "".join(vallist)
 
     else:
-        return TypeError("Invalid conversion source type: "+str(type(val)))
+        return TypeError("Invalid conversion source type: " + str(type(val)))
 
 
 class Save:
     """
     Class for the save data currently known in the game
     """
+
     def __init__(self):
         self.timestamp: int
         self.version: str
@@ -116,14 +114,14 @@ class Save:
             for location in self.__locations:
                 if location[0] == attr:
                     return convertToHex(self.__getattribute__(location[2]))
-            return KeyError("No such save location currently known: "+str(attr))
+            return KeyError("No such save location currently known: " + str(attr))
 
         else:
             if attr[:2] == "__":
-                return AttributeError("Trying to access protected value: "+str(attr))
+                return AttributeError("Trying to access protected value: " + str(attr))
             attribute = self.__getattribute__(attr)
             if not attribute:
-                return KeyError("No such save value currently known: "+str(attr))
+                return KeyError("No such save value currently known: " + str(attr))
             else:
                 return convertToHex(attribute)
 
@@ -140,12 +138,31 @@ class Save:
                 if location[0] == key:
                     self.__setattr__(location[2], val)
                     return
-            return KeyError("No such save location currently known: "+str(key))
+            return KeyError("No such save location currently known: " + str(key))
         else:
             if key[:2] == "__":
-                return AttributeError("Trying to access protected value: "+str(key))
+                return AttributeError("Trying to access protected value: " + str(key))
             for location in self.__locations:
                 if location[2] == key:
                     self.__setattr__(key, val)
                     return
-            return KeyError("No such save value currently known: "+str(key))
+            return KeyError("No such save value currently known: " + str(key))
+
+
+if __name__ == "__main__":
+    assert convertToHex(15) == "0f000000", \
+        "int convert to hex failure. Got "+str(convertToHex(15))+" instead"
+    assert convertFromHex("0f000000", int) == 15, \
+        "int convert from hex fail. Got "+str(convertFromHex("0f000000", int))+" instead"
+
+    assert convertToHex("1.0.7.0") == "302e372e302e31", \
+        "str convert to hex fail. Got "+str(convertToHex("1.0.7.0"))+" instead"
+    assert convertFromHex("302e372e302e31", str) == "1.0.7.0", \
+        "str convert from hex fail. Got "+str(convertFromHex("302e372e302e31", str))+" instead"
+
+    assert convertToHex([12, 13, 14]) == "0c000d000e00", \
+        "list convert to hex fail. Got "+str(convertToHex([12, 13, 14]))+" instead"
+    assert convertFromHex("0c000d000e00", list) == [12, 13, 14],\
+        "list convert from hex fail. Got "+str(convertFromHex("0c000d000e00", list))+" instead"
+
+    print("All tests passed successfully")
