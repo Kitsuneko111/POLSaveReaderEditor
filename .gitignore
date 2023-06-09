@@ -3,3 +3,4 @@
 /venv
 /.idea
 /util/__pycache__
+*.sav
