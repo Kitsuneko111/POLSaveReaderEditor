@@ -1,5 +1,5 @@
 """Python class for storing save information as an object"""
-from typing import List, Union
+from typing import List, Union, Optional
 
 from util.locations import locations
 
@@ -77,11 +77,11 @@ class Save:
     """
 
     def __init__(self):
-        self.timestamp: int
-        self.version: str
-        self.elapsed: int
-        self.deathcounter: int
-        self.slot: int
+        self.timestamp: Optional[int]  = None
+        self.version: Optional[str]  = None
+        self.elapsed: Optional[int]  = None
+        self.deathcounter: Optional[int]  = None
+        self.slot: Optional[int]  = None
         """
         1. Village Intro
         3. A New Friend
@@ -98,9 +98,9 @@ class Save:
         17. Home
         """
         self.__chapters = (1, 3, 4, 5, 6, 7, 9, 10, 12, 14, 15, 16, 17)
-        self.chapterId: int
-        self.sceneId: int
-        self.position: List[int]
+        self.chapterId: Optional[int]  = None
+        self.sceneId: Optional[int]  = None
+        self.position: Optional[List[int]] = None
 
         self.__locations = locations
 
@@ -132,10 +132,10 @@ class Save:
         :param val: Value to store
         :return: None | Error
         """
-        val = convertFromHex(val, type(key))
         if type(key) == int:
             for location in self.__locations:
                 if location[0] == key:
+                    val = convertFromHex(val, location[3])
                     self.__setattr__(location[2], val)
                     return
             return KeyError("No such save location currently known: " + str(key))
@@ -144,6 +144,7 @@ class Save:
                 return AttributeError("Trying to access protected value: " + str(key))
             for location in self.__locations:
                 if location[2] == key:
+                    val = convertFromHex(val, location[3])
                     self.__setattr__(key, val)
                     return
             return KeyError("No such save value currently known: " + str(key))
@@ -164,5 +165,13 @@ if __name__ == "__main__":
         "list convert to hex fail. Got "+str(convertToHex([12, 13, 14]))+" instead"
     assert convertFromHex("0c000d000e00", list) == [12, 13, 14],\
         "list convert from hex fail. Got "+str(convertFromHex("0c000d000e00", list))+" instead"
+
+    saveFile = Save()
+    saveFile.set("position", "0c000d000e00")
+    assert saveFile.position == [12, 13, 14], \
+        "Save file set fail. Got "+str(saveFile.position)+" instead"
+    # Illegal access of private attribute to allow secure testing of hex value access
+    assert saveFile.get(saveFile._Save__locations[-1][0]) == "0c000d000e00", \
+        "Save file get fail. Got "+str(saveFile.get("position"))+" instead"
 
     print("All tests passed successfully")
