@@ -14,6 +14,7 @@ class Reader:
     """
     def __init__(self, save: Optional[Save] = None):
         self.save = save if save else Save()
+        self.lastFile = ""
         self.__locations = locations
 
     def readFile(self, file, saveOverride: Optional[Save] = None) -> Save:
@@ -36,6 +37,7 @@ class Reader:
                 data += savefile.read(1).hex()
             saveObject.set(location[0], data)
         savefile.close()
+        self.lastFile = file
         return saveObject
 
     def _compare(self, new: Save, old: Optional[Save] = None) -> List[str]:
