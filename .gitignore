@@ -4,4 +4,5 @@
 /.idea
 /util/__pycache__
 /__pycache__
+/winfiletime/__pycache__
 *.sav
