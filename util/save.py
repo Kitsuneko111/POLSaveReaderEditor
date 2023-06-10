@@ -92,7 +92,7 @@ class Save:
         self.__chapters = (1, 3, 4, 5, 6, 7, 9, 10, 12, 14, 15, 16, 17)
         self.chapterId: Optional[int] = None
         self.sceneId: Optional[int] = None
-        self.position: Optional[List[int]] = None
+        self.position: List[Optional[int]] = [None, None, None]
 
         self.__locations = locations
 
