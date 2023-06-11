@@ -5,7 +5,6 @@ from typing import Optional, List, Union, Dict, Tuple, Any, NoReturn
 
 from util.locations import locations
 from util.save import Save
-from util.hexextendor import hexExtendor
 
 
 class Reader:
