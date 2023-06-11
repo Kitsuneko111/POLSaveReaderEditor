@@ -2,7 +2,6 @@
 /util/hex decoder.txt
 /venv
 /.idea
-/util/__pycache__
 /__pycache__
-/winfiletime/__pycache__
+/*/__pycache__
 *.sav
