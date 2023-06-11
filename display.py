@@ -31,6 +31,7 @@ class Display:
             "LEFT": [],
             "RIGHT": []
         }
+        self._backupButton = None
 
     def run(self):
         """
@@ -59,6 +60,8 @@ class Display:
         self._editButton.pack(fill=tk.X, expand=True)
         self._compareButton = tk.Button(left_cont, text="Compare", command=self.__setupCompareGui)
         self._compareButton.pack(fill=tk.X, expand=True)
+        self._monitorButton = tk.Button(left_cont, text="Monitor", command=self.__setupConstantCompareGui)
+        self._monitorButton.pack(fill=tk.X, expand=True)
 
     def __setupToolbarGui(self, cont, save, side):
         but1 = tk.Button(cont, text="1", command=lambda: self.__buttonPress(lambda: self._reader.readFile(
@@ -92,10 +95,65 @@ class Display:
                 self.__changeVals(self.compvals, self._compsave)
             if self._mainsave.version is not None and self._compsave.version is not None:
                 self.__checkCompare()
+        if self.mode == "MONITOR":
+            self.__changeVals(self.mainvals, self._mainsave)
+            self._window.after(10000, self.__constantCompare)
         if button < len(self._buttons[side]):
             for but in self._buttons[side]:
                 but["relief"] = tk.RAISED
             self._buttons[side][button]["relief"] = tk.SUNKEN
+
+    def __constantCompare(self):
+        if self.mode != "MONITOR":
+            return
+        newSave = Save()
+        self._reader.readFile(self._reader.lastFile, newSave)
+        changes = self._reader.compare(newSave, self._mainsave)
+        if "timestamp" in changes:
+            self.mainvals[0]["fg"] = "red"
+        else:
+            self.mainvals[0]["fg"] = "black"
+        if "version" in changes:
+            self.mainvals[1]["fg"] = "red"
+        else:
+            self.mainvals[1]["fg"] = "black"
+        if "elapsed" in changes:
+            self.mainvals[2]["fg"] = "red"
+        else:
+            self.mainvals[2]["fg"] = "black"
+        if "deathcounter" in changes:
+            self.mainvals[3]["fg"] = "red"
+        else:
+            self.mainvals[3]["fg"] = "black"
+        if "slot" in changes:
+            self.mainvals[4]["fg"] = "red"
+        else:
+            self.mainvals[4]["fg"] = "black"
+        if "chapterId" in changes:
+            self.mainvals[5]["fg"] = "red"
+        else:
+            self.mainvals[5]["fg"] = "black"
+        if "sceneId" in changes:
+            self.mainvals[6]["fg"] = "red"
+        else:
+            self.mainvals[6]["fg"] = "black"
+        if "position" in changes:
+            if changes["position"][0][0] != changes["position"][1][0]:
+                self.mainvals[7][0]["fg"] = "red"
+            else:
+                self.mainvals[7][0]["fg"] = "black"
+            if changes["position"][0][1] != changes["position"][1][1]:
+                self.mainvals[7][1]["fg"] = "red"
+            else:
+                self.mainvals[7][1]["fg"] = "black"
+            if changes["position"][0][2] != changes["position"][1][2]:
+                self.mainvals[7][2]["fg"] = "red"
+            else:
+                self.mainvals[7][2]["fg"] = "black"
+        self.__changeVals(self.mainvals, newSave)
+        self._mainsave = newSave
+        print("compared")
+        self._window.after(10000, self.__constantCompare)
 
     def __checkCompare(self):
         for i in range(8):
@@ -187,7 +245,8 @@ class Display:
                   command=lambda: self.__save(self._reader.lastFile)) \
             .pack(fill=tk.X, expand=True, side=tk.LEFT)
         tk.Button(tools, text="Save As", command=self.__saveAs).pack(fill=tk.X, expand=True, side=tk.LEFT)
-        tk.Button(tools, text="Backup", command=self.__backup).pack(fill=tk.X, expand=True, side=tk.LEFT)
+        self._backupButton = tk.Button(tools, text="Backup", command=self.__backup)
+        self._backupButton.pack(fill=tk.X, expand=True, side=tk.LEFT)
 
         self.mainvals = self.__setupValsEntry(right)
 
@@ -197,6 +256,7 @@ class Display:
             shutil.copy(self._reader.lastFile,
                         f'{os.getenv("APPDATA")}\\..\\LocalLow\\Wishfully\\Planet of Lana\\backups\\'
                         f'{datetime.datetime.now().strftime("%Y%m%d - %H%M%S")}.sav')
+            self._backupButton["fg"] = "green"
 
     def __setupValsEntry(self, frame):
         column1 = tk.Frame(frame)
@@ -439,6 +499,26 @@ class Display:
 
         self.__checkCompare()
 
+    def __setupConstantCompareGui(self):
+        self.mode = "MONITOR"
+        self.__setupMainGui()
+        self._window.title("Planet of Lana Save Editor - Monitoring")
+        self._monitorButton["relief"] = tk.SUNKEN
+        right = tk.Frame(self._main)
+        right.config(bd=1, relief=tk.SUNKEN)
+        right.columnconfigure(1, weight=1)
+        right.pack(fill=tk.BOTH, expand=True, side=tk.RIGHT)
+
+        tools = tk.Frame(right)
+        tools.config(bd=1, relief=tk.SUNKEN, padx=2, pady=3)
+        tools.rowconfigure(0, weight=1)
+        tools.pack(fill=tk.BOTH, side=tk.TOP)
+        tools_cont = tk.Frame(tools)
+        tools_cont.pack(fill=tk.X, side=tk.LEFT)
+
+        self.__setupToolbarGui(tools, self._mainsave, "LEFT")
+
+        self.mainvals = self.__setupValsLabel(right, self._mainsave)
 
 if __name__ == '__main__':
     display = Display()
@@ -446,4 +526,3 @@ if __name__ == '__main__':
 
 # TODO - convert reader.py constant script to GUI base
 # TODO - add types and comments and like useful stuff
-# TODO - backup button
