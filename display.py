@@ -435,3 +435,5 @@ class Display:
 if __name__ == '__main__':
     display = Display()
     display.run()
+
+# TODO - convert reader.py constant script to GUI base

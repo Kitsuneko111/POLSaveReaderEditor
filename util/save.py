@@ -93,6 +93,7 @@ class Save:
         self.chapterId: Optional[int] = None
         self.sceneId: Optional[int] = None
         self.position: List[Optional[int]] = [None, None, None]
+        # TODO - Shrines
 
         self.__locations = locations
 
