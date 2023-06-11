@@ -187,8 +187,16 @@ class Display:
                   command=lambda: self.__save(self._reader.lastFile)) \
             .pack(fill=tk.X, expand=True, side=tk.LEFT)
         tk.Button(tools, text="Save As", command=self.__saveAs).pack(fill=tk.X, expand=True, side=tk.LEFT)
+        tk.Button(tools, text="Backup", command=self.__backup).pack(fill=tk.X, expand=True, side=tk.LEFT)
 
         self.mainvals = self.__setupValsEntry(right)
+
+    def __backup(self):
+        if self._reader.lastFile:
+            os.makedirs(os.path.dirname(self._reader.lastFile), exist_ok=True)
+            shutil.copy(self._reader.lastFile,
+                        f'{os.getenv("APPDATA")}\\..\\LocalLow\\Wishfully\\Planet of Lana\\backups\\'
+                        f'{datetime.datetime.now().strftime("%Y%m%d - %H%M%S")}.sav')
 
     def __setupValsEntry(self, frame):
         column1 = tk.Frame(frame)
@@ -437,3 +445,5 @@ if __name__ == '__main__':
     display.run()
 
 # TODO - convert reader.py constant script to GUI base
+# TODO - add types and comments and like useful stuff
+# TODO - backup button
