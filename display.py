@@ -432,5 +432,6 @@ class Display:
         self.__checkCompare()
 
 
-display = Display()
-display.run()
+if __name__ == '__main__':
+    display = Display()
+    display.run()
