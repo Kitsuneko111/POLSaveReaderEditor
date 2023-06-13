@@ -129,11 +129,11 @@ class Display:
                     self._logging[2] = int(datetime.datetime.now().timestamp())
                 if self._reader.lastFile:
                     os.makedirs(f'{os.getenv("APPDATA")}\\..\\LocalLow\\Wishfully\\Planet of Lana\\'
-                                f'{datetime.datetime.utcfromtimestamp(self._logging[2]).strftime("%Y%m%d - %H%M%S")}'
+                                f'{datetime.datetime.fromtimestamp(self._logging[2]).strftime("%Y%m%d - %H%M%S")}'
                                 , exist_ok=True)
                     shutil.copy(self._reader.lastFile,
                                 f'{os.getenv("APPDATA")}\\..\\LocalLow\\Wishfully\\Planet of Lana\\'
-                                f'{datetime.datetime.utcfromtimestamp(self._logging[2]).strftime("%Y%m%d - %H%M%S")}'
+                                f'{datetime.datetime.fromtimestamp(self._logging[2]).strftime("%Y%m%d - %H%M%S")}'
                                 f'\\{datetime.datetime.now().strftime("%Y%m%d - %H%M%S")}.sav')
 
         if currFile != self.__lastFile:
@@ -231,7 +231,7 @@ class Display:
     def __changeVals(self, vals: List[Union[tk.Entry, tk.Label, List[tk.Entry]]], save):
         vals[0]["text"] = winfiletime.to_datetime(save.timestamp).strftime("%Y/%m/%d - %H:%M:%S")
         vals[1]["text"] = save.version
-        vals[2]["text"] = datetime.datetime.utcfromtimestamp(save.elapsed).strftime("%Hh %Mm %Ss")
+        vals[2]["text"] = datetime.datetime.fromtimestamp(save.elapsed).strftime("%Hh %Mm %Ss")
         vals[3]["text"] = str(save.deathcounter)
         if type(vals[4]) == tk.Entry:
             vals[4].delete(0, "end")
@@ -387,7 +387,7 @@ class Display:
         tk.Label(row1, text="Elapsed: ").pack(side=tk.LEFT)
         row1 = tk.Frame(column2)
         row1.pack(fill=tk.BOTH, side=tk.TOP)
-        elapsedEntry = tk.Label(row1, text=str(datetime.datetime.utcfromtimestamp(self._mainsave.elapsed)
+        elapsedEntry = tk.Label(row1, text=str(datetime.datetime.fromtimestamp(self._mainsave.elapsed)
                                                .strftime("%Hh %Mm %Ss")
                                                if self._mainsave.elapsed is not None else None))
         elapsedEntry.pack(side=tk.LEFT)
@@ -484,7 +484,7 @@ class Display:
         tk.Label(row1, text="Elapsed: ").pack(side=tk.LEFT)
         row1 = tk.Frame(column2)
         row1.pack(fill=tk.BOTH, side=tk.TOP)
-        elapsedEntry = tk.Label(row1, text=str(datetime.datetime.utcfromtimestamp(save.elapsed)
+        elapsedEntry = tk.Label(row1, text=str(datetime.datetime.fromtimestamp(save.elapsed)
                                                .strftime("%Hh %Mm %Ss")
                                                if save.elapsed is not None else None))
         elapsedEntry.pack(side=tk.LEFT)
@@ -518,11 +518,11 @@ class Display:
                     self._logging[2] = int(datetime.datetime.now().timestamp())
                 if self._reader.lastFile:
                     os.makedirs(f'{os.getenv("APPDATA")}\\..\\LocalLow\\Wishfully\\Planet of Lana\\'
-                                f'{datetime.datetime.utcfromtimestamp(self._logging[2]).strftime("%Y%m%d - %H%M%S")}'
+                                f'{datetime.datetime.fromtimestamp(self._logging[2]).strftime("%Y%m%d - %H%M%S")}'
                                 , exist_ok=True)
                     shutil.copy(self._reader.lastFile,
                                 f'{os.getenv("APPDATA")}\\..\\LocalLow\\Wishfully\\Planet of Lana\\'
-                                f'{datetime.datetime.utcfromtimestamp(self._logging[2]).strftime("%Y%m%d - %H%M%S")}'
+                                f'{datetime.datetime.fromtimestamp(self._logging[2]).strftime("%Y%m%d - %H%M%S")}'
                                 f'\\{datetime.datetime.now().strftime("%Y%m%d - %H%M%S")}.sav')
         else:
             thing[1]["fg"] = "red"
@@ -615,7 +615,7 @@ class Display:
         elapsed.pack(side=tk.LEFT)
         row1 = tk.Frame(column2)
         row1.pack(fill=tk.BOTH, side=tk.TOP)
-        elapsedEntry = tk.Label(row1, text=str(datetime.datetime.utcfromtimestamp(self._mainsave.elapsed)
+        elapsedEntry = tk.Label(row1, text=str(datetime.datetime.fromtimestamp(self._mainsave.elapsed)
                                                .strftime("%Hh %Mm %Ss")
                                                if self._mainsave.elapsed is not None else None))
         elapsedEntry.pack(side=tk.LEFT)
