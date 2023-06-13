@@ -7,12 +7,4 @@ To help prevent cheating, the file containing the specific byte locations in the
 ## Contact
 This program has been primarily developed by Timemaster111. You can find them at the PoL [Speedrunning Discord](https://discord.gg/3kJeJqUrez)
 ## Donate
-<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
-<script>
-  kofiWidgetOverlay.draw('timemaster111', {
-    'type': 'floating-chat',
-    'floating-chat.donateButton.text': 'Donate',
-    'floating-chat.donateButton.background-color': '#fcbf47',
-    'floating-chat.donateButton.text-color': '#323842'
-  });
-</script>
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J5M88EM)
