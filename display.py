@@ -4,12 +4,13 @@ import os
 import tkinter as tk
 import winfiletime
 from tkinter import filedialog as fd
-from typing import List, Union
+from typing import List, Union, Optional
 import shutil
 
 from reader import Reader
 from util.save import Save
 from writer import Writer
+from playsound import playsound
 
 
 class Display:
@@ -32,6 +33,17 @@ class Display:
             "RIGHT": []
         }
         self._backupButton = None
+        self.__timestamp: List[bool, Optional[tk.Button]] = [False, None]
+        self.__version: List[bool, Optional[tk.Button]] = [False, None]
+        self.__elapsed: List[bool, Optional[tk.Button]] = [False, None]
+        self.__deaths: List[bool, Optional[tk.Button]] = [True, None]
+        self.__slot: List[bool, Optional[tk.Button]] = [False, None]
+        self.__chapter: List[bool, Optional[tk.Button]] = [True, None]
+        self.__scene: List[bool, Optional[tk.Button]] = [True, None]
+        self.__position: List[bool, Optional[tk.Button]] = [False, None]
+        self.__shrines: List[bool, Optional[tk.Button]] = [False, None]
+        self._logging: List[bool, Optional[tk.Button], int] = [True, None, 0]
+        self.__lastFile = ""
 
     def run(self):
         """
@@ -97,7 +109,8 @@ class Display:
                 self.__checkCompare()
         if self.mode == "MONITOR":
             self.__changeVals(self.mainvals, self._mainsave)
-            self._window.after(10000, self.__constantCompare)
+            self._window.after(1, self.__constantCompare)
+
         if button < len(self._buttons[side]):
             for but in self._buttons[side]:
                 but["relief"] = tk.RAISED
@@ -107,52 +120,94 @@ class Display:
         if self.mode != "MONITOR":
             return
         newSave = Save()
+        currFile = self._reader.lastFile[:]
         self._reader.readFile(self._reader.lastFile, newSave)
         changes = self._reader.compare(newSave, self._mainsave)
+        if len(changes) or self.__lastFile == "":
+            if self._logging[0]:
+                if not self._logging[2]:
+                    self._logging[2] = int(datetime.datetime.now().timestamp())
+                if self._reader.lastFile:
+                    os.makedirs(f'{os.getenv("APPDATA")}\\..\\LocalLow\\Wishfully\\Planet of Lana\\'
+                                f'{datetime.datetime.utcfromtimestamp(self._logging[2]).strftime("%Y%m%d - %H%M%S")}'
+                                , exist_ok=True)
+                    shutil.copy(self._reader.lastFile,
+                                f'{os.getenv("APPDATA")}\\..\\LocalLow\\Wishfully\\Planet of Lana\\'
+                                f'{datetime.datetime.utcfromtimestamp(self._logging[2]).strftime("%Y%m%d - %H%M%S")}'
+                                f'\\{datetime.datetime.now().strftime("%Y%m%d - %H%M%S")}.sav')
+
+        if currFile != self.__lastFile:
+            self.__lastFile = currFile
+            print("skipped")
+            self._window.after(10000, self.__constantCompare)
+            return
+        self.__lastFile = currFile
+        ding = False
         if "timestamp" in changes:
             self.mainvals[0]["fg"] = "red"
+            if self.__timestamp[0]:
+                ding = True
         else:
             self.mainvals[0]["fg"] = "black"
         if "version" in changes:
             self.mainvals[1]["fg"] = "red"
+            if self.__version[0]:
+                ding = True
         else:
             self.mainvals[1]["fg"] = "black"
         if "elapsed" in changes:
             self.mainvals[2]["fg"] = "red"
+            if self.__elapsed[0]:
+                ding = True
         else:
             self.mainvals[2]["fg"] = "black"
         if "deathcounter" in changes:
             self.mainvals[3]["fg"] = "red"
+            if self.__deaths[0]:
+                ding = True
         else:
             self.mainvals[3]["fg"] = "black"
         if "slot" in changes:
             self.mainvals[4]["fg"] = "red"
+            if self.__slot[0]:
+                ding = True
         else:
             self.mainvals[4]["fg"] = "black"
         if "chapterId" in changes:
             self.mainvals[5]["fg"] = "red"
+            if self.__chapter[0]:
+                ding = True
         else:
             self.mainvals[5]["fg"] = "black"
         if "sceneId" in changes:
             self.mainvals[6]["fg"] = "red"
+            if self.__scene[0]:
+                ding = True
         else:
             self.mainvals[6]["fg"] = "black"
         if "position" in changes:
             if changes["position"][0][0] != changes["position"][1][0]:
                 self.mainvals[7][0]["fg"] = "red"
+                if self.__position[0]:
+                    ding = True
             else:
                 self.mainvals[7][0]["fg"] = "black"
             if changes["position"][0][1] != changes["position"][1][1]:
                 self.mainvals[7][1]["fg"] = "red"
+                if self.__position[0]:
+                    ding = True
             else:
                 self.mainvals[7][1]["fg"] = "black"
             if changes["position"][0][2] != changes["position"][1][2]:
                 self.mainvals[7][2]["fg"] = "red"
+                if self.__position[0]:
+                    ding = True
             else:
                 self.mainvals[7][2]["fg"] = "black"
         self.__changeVals(self.mainvals, newSave)
         self._mainsave = newSave
-        print("compared")
+        if ding:
+            playsound("snd_fragment_retrievewav-14728.mp3")
         self._window.after(10000, self.__constantCompare)
 
     def __checkCompare(self):
@@ -252,7 +307,9 @@ class Display:
 
     def __backup(self):
         if self._reader.lastFile:
-            os.makedirs(os.path.dirname(self._reader.lastFile), exist_ok=True)
+            os.makedirs(f'{os.getenv("APPDATA")}\\..\\LocalLow\\Wishfully\\Planet of Lana\\'
+                        f'backups\\'
+                        , exist_ok=True)
             shutil.copy(self._reader.lastFile,
                         f'{os.getenv("APPDATA")}\\..\\LocalLow\\Wishfully\\Planet of Lana\\backups\\'
                         f'{datetime.datetime.now().strftime("%Y%m%d - %H%M%S")}.sav')
@@ -452,6 +509,143 @@ class Display:
             positionEntry
         ]
 
+    def __reverse(self, thing):
+        thing[0] = not thing[0]
+        if thing[0]:
+            thing[1]["fg"] = "green"
+            if len(thing) == 3:
+                if not self._logging[2]:
+                    self._logging[2] = int(datetime.datetime.now().timestamp())
+                if self._reader.lastFile:
+                    os.makedirs(f'{os.getenv("APPDATA")}\\..\\LocalLow\\Wishfully\\Planet of Lana\\'
+                                f'{datetime.datetime.utcfromtimestamp(self._logging[2]).strftime("%Y%m%d - %H%M%S")}'
+                                , exist_ok=True)
+                    shutil.copy(self._reader.lastFile,
+                                f'{os.getenv("APPDATA")}\\..\\LocalLow\\Wishfully\\Planet of Lana\\'
+                                f'{datetime.datetime.utcfromtimestamp(self._logging[2]).strftime("%Y%m%d - %H%M%S")}'
+                                f'\\{datetime.datetime.now().strftime("%Y%m%d - %H%M%S")}.sav')
+        else:
+            thing[1]["fg"] = "red"
+            if len(thing) == 3:
+                thing[2] = 0
+
+    def __setupValsInverse(self, frame):
+        column1 = tk.Frame(frame)
+        column1.pack(fill=tk.BOTH, side=tk.LEFT)
+        column2 = tk.Frame(frame)
+        column2.pack(fill=tk.BOTH, side=tk.LEFT)
+        row1 = tk.Frame(column1)
+        row1.pack(fill=tk.BOTH, side=tk.TOP)
+        timestamp = tk.Button(row1, text="Timestamp: ", command=lambda: self.__reverse(self.__timestamp),
+                              relief=tk.GROOVE, borderwidth=0, pady=0, fg="red")
+        timestamp.pack(side=tk.LEFT)
+        row1 = tk.Frame(column2)
+        row1.pack(fill=tk.BOTH, side=tk.TOP)
+        timestampEntry = tk.Label(row1, text=str(winfiletime.to_datetime(self._mainsave.timestamp)
+                                                 .strftime("%Y/%m/%d - %H:%M:%S")
+                                                 if self._mainsave.timestamp is not None else None))
+        timestampEntry.pack(side=tk.LEFT)
+        row2 = tk.Frame(column1)
+        row2.pack(fill=tk.BOTH, side=tk.TOP)
+        deaths = tk.Button(row2, text="Deaths: ", command=lambda: self.__reverse(self.__deaths), relief=tk.GROOVE,
+                           borderwidth=0, pady=0, fg="green")
+        deaths.pack(side=tk.LEFT)
+        row2 = tk.Frame(column2)
+        row2.pack(fill=tk.BOTH, side=tk.TOP)
+        deathcounterEntry = tk.Label(row2, text=str(self._mainsave.deathcounter))
+        deathcounterEntry.pack(side=tk.LEFT)
+        row3 = tk.Frame(column1)
+        row3.pack(fill=tk.BOTH, side=tk.TOP)
+        chapter = tk.Button(row3, text="Chapter: ", command=lambda: self.__reverse(self.__chapter), relief=tk.GROOVE,
+                            borderwidth=0, pady=0, fg="green")
+        chapter.pack(side=tk.LEFT)
+        row3 = tk.Frame(column2)
+        row3.pack(fill=tk.BOTH, side=tk.TOP)
+        chapterEntry = tk.Entry(row3)
+        chapterEntry.insert(0, str(self._mainsave.chapterId))
+        chapterEntry.pack(side=tk.LEFT)
+        column3 = tk.Frame(frame)
+        column3.pack(fill=tk.BOTH, side=tk.LEFT)
+        tk.Label(column3, text="\t").pack(side=tk.LEFT)
+
+        column1 = tk.Frame(frame)
+        column1.pack(fill=tk.BOTH, side=tk.LEFT)
+        column2 = tk.Frame(frame)
+        column2.pack(fill=tk.BOTH, side=tk.LEFT)
+        row1 = tk.Frame(column1)
+        row1.pack(fill=tk.BOTH, side=tk.TOP)
+        version = tk.Button(row1, text="Version: ", command=lambda: self.__reverse(self.__version), relief=tk.GROOVE,
+                            borderwidth=0, pady=0, fg="red")
+        version.pack(side=tk.LEFT)
+        row1 = tk.Frame(column2)
+        row1.pack(fill=tk.BOTH, side=tk.TOP)
+        versionEntry = tk.Label(row1, text=self._mainsave.version)
+        versionEntry.pack(side=tk.LEFT)
+        row2 = tk.Frame(column1)
+        row2.pack(fill=tk.BOTH, side=tk.TOP)
+        shrines = tk.Button(row2, text="Shrines: ", command=lambda: self.__reverse(self.__shrines), relief=tk.GROOVE,
+                            borderwidth=0, pady=0, fg="red")
+        shrines.pack(side=tk.LEFT)
+        row2 = tk.Frame(column2)
+        row2.pack(fill=tk.BOTH, side=tk.TOP)
+        shrineEntry = tk.Label(row2, text="WIP")
+        shrineEntry.pack(side=tk.LEFT)
+        row3 = tk.Frame(column1)
+        row3.pack(fill=tk.BOTH, side=tk.TOP)
+        scene = tk.Button(row3, text="Scene: ", command=lambda: self.__reverse(self.__scene), relief=tk.GROOVE,
+                          borderwidth=0, pady=0, fg="green")
+        scene.pack(side=tk.LEFT)
+        row3 = tk.Frame(column2)
+        row3.pack(fill=tk.BOTH, side=tk.TOP)
+        sceneEntry = tk.Entry(row3)
+        sceneEntry.insert(0, str(self._mainsave.sceneId))
+        sceneEntry.pack(side=tk.LEFT)
+        column3 = tk.Frame(frame)
+        column3.pack(fill=tk.BOTH, side=tk.LEFT)
+        tk.Label(column3, text="\t").pack(side=tk.LEFT)
+
+        column1 = tk.Frame(frame)
+        column1.pack(fill=tk.BOTH, side=tk.LEFT)
+        column2 = tk.Frame(frame)
+        column2.pack(fill=tk.BOTH, side=tk.LEFT)
+        row1 = tk.Frame(column1)
+        row1.pack(fill=tk.BOTH, side=tk.TOP)
+        elapsed = tk.Button(row1, text="Elapsed: ", command=lambda: self.__reverse(self.__elapsed), relief=tk.GROOVE,
+                            borderwidth=0, pady=0, fg="red")
+        elapsed.pack(side=tk.LEFT)
+        row1 = tk.Frame(column2)
+        row1.pack(fill=tk.BOTH, side=tk.TOP)
+        elapsedEntry = tk.Label(row1, text=str(datetime.datetime.utcfromtimestamp(self._mainsave.elapsed)
+                                               .strftime("%Hh %Mm %Ss")
+                                               if self._mainsave.elapsed is not None else None))
+        elapsedEntry.pack(side=tk.LEFT)
+        row2 = tk.Frame(column1)
+        row2.pack(fill=tk.BOTH, side=tk.TOP)
+        slot = tk.Button(row2, text="Slot: ", command=lambda: self.__reverse(self.__slot), relief=tk.GROOVE,
+                            borderwidth=0, pady=0, fg="red")
+        slot.pack(side=tk.LEFT)
+        row2 = tk.Frame(column2)
+        row2.pack(fill=tk.BOTH, side=tk.TOP)
+        slotEntry = tk.Entry(row2)
+        slotEntry.insert(0, str(self._mainsave.slot + 1 if self._mainsave.slot is not None else None))
+        slotEntry.pack(side=tk.LEFT)
+        row3 = tk.Frame(column1)
+        row3.pack(fill=tk.BOTH, side=tk.TOP)
+        position = tk.Button(row3, text="Position: ", command=lambda: self.__reverse(self.__position), relief=tk.GROOVE,
+                             borderwidth=0, pady=0, fg="red")
+        position.pack(side=tk.LEFT)
+        row3 = tk.Frame(column2)
+        row3.pack(fill=tk.BOTH, side=tk.TOP)
+        positionEntry = [tk.Entry(row3), tk.Entry(row3), tk.Entry(row3)]
+        for i in range(3):
+            positionEntry[i].insert(0, str(self._mainsave.position[i]))
+            positionEntry[i].pack(side=tk.LEFT)
+
+        return [[
+                    timestampEntry, versionEntry, elapsedEntry, deathcounterEntry, slotEntry, chapterEntry, sceneEntry,
+                    positionEntry
+                ], [timestamp, version, elapsed, deaths, slot, chapter, scene, position, shrines]]
+
     def __setupCompareGui(self):
         self.mode = "COMPARE"
         self.__setupMainGui()
@@ -518,11 +712,23 @@ class Display:
 
         self.__setupToolbarGui(tools, self._mainsave, "LEFT")
 
-        self.mainvals = self.__setupValsLabel(right, self._mainsave)
+        logButton = tk.Button(tools, text="Log", command=lambda: self.__reverse(self._logging),
+                              fg="green" if self._logging[0] else "red")
+        logButton.pack(fill=tk.X, expand=True, side=tk.LEFT)
+        self._logging[1] = logButton
+
+        self.mainvals, compButtons = self.__setupValsInverse(right)
+        vals = [
+            self.__timestamp, self.__version, self.__elapsed, self.__deaths, self.__slot,
+            self.__chapter, self.__scene, self.__position, self.__shrines
+        ]
+        for i in range(len(vals)):
+            vals[i][1] = compButtons[i]
+
 
 if __name__ == '__main__':
     display = Display()
     display.run()
 
-# TODO - convert reader.py constant script to GUI base
 # TODO - add types and comments and like useful stuff
+# TODO - reformat into different classes
