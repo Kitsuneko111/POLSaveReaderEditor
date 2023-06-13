@@ -37,7 +37,7 @@ class Writer:
                 if location[2] == "timestamp":
                     saveObject.timestamp = 0
                 if location[2] == "elapsed":
-                    saveObject.elapsed = 54000000
+                    saveObject.elapsed = 30000000
                 if location[2] == "version":
                     saveObject.version = "6.9.6.9"
                 # TODO - Add shrine support when ready
